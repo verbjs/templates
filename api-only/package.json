@@ -1,0 +1,49 @@
+{
+  "name": "verb-api-starter",
+  "version": "1.0.0",
+  "description": "Production-ready API starter template for Verb framework",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "lint": "biome check .",
+    "lint:fix": "biome check --apply .",
+    "typecheck": "bun --no-install --type-check src/index.ts",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:seed": "bun run src/db/seed.ts",
+    "docker:build": "docker build -t verb-api .",
+    "docker:run": "docker run -p 3000:3000 verb-api"
+  },
+  "dependencies": {
+    "verb": "github:verbjs/verb",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/jsonwebtoken": "^9.0.5",
+    "bun-types": "latest"
+  },
+  "keywords": [
+    "verb",
+    "api",
+    "rest",
+    "typescript",
+    "bun",
+    "starter",
+    "template"
+  ],
+  "license": "MIT",
+  "overrides": {
+    "graceful-fs": "^4.2.11",
+    "natives": "^1.1.6"
+  },
+  "resolutions": {
+    "graceful-fs": "^4.2.11",
+    "natives": "^1.1.6"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "metrics-service",
+  "version": "1.0.0",
+  "description": "High-performance metrics collection service with UDP and TCP support",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun test",
+    "lint": "biome check .",
+    "typecheck": "bun --no-install --type-check src/index.ts"
+  },
+  "dependencies": {
+    "verb": "latest",
+    "@influxdata/influxdb-client": "^1.33.0",
+    "redis": "^4.6.0",
+    "consul": "^0.40.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/consul": "^0.40.0",
+    "bun-types": "latest"
+  }
+}

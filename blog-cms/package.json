@@ -1,0 +1,42 @@
+{
+  "name": "verb-blog-cms-starter",
+  "version": "1.0.0",
+  "description": "Modern blog and CMS platform built with Verb framework",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun test",
+    "lint": "biome check .",
+    "typecheck": "bun --no-install --type-check src/index.ts"
+  },
+  "dependencies": {
+    "verb": "latest",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4",
+    "pg": "^8.11.3",
+    "redis": "^4.6.0",
+    "marked": "^9.0.0",
+    "highlight.js": "^11.9.0",
+    "sharp": "^0.32.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/pg": "^8.10.9",
+    "@types/marked": "^6.0.0",
+    "bun-types": "latest"
+  },
+  "keywords": [
+    "verb",
+    "blog",
+    "cms",
+    "content",
+    "markdown",
+    "publishing"
+  ],
+  "license": "MIT"
+}

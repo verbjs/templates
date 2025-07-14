@@ -1,0 +1,167 @@
+version: '3.8'
+
+services:
+  # Infrastructure
+  consul:
+    image: consul:1.15
+    ports:
+      - "8500:8500"
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    volumes:
+      - consul_data:/consul/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=microservices
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  influxdb:
+    image: influxdb:2.7-alpine
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=metrics
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=password
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+
+  # API Gateway
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    ports:
+      - "3000:3000"      # HTTP
+      - "3001:3001"      # WebSocket proxy
+      - "8080:8080"      # UDP proxy
+      - "9090:9090"      # TCP proxy
+    environment:
+      - NODE_ENV=production
+      - CONSUL_URL=http://consul:8500
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - consul
+      - redis
+    restart: unless-stopped
+
+  # Microservices
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/microservices
+      - CONSUL_URL=http://consul:8500
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
+    depends_on:
+      - postgres
+      - consul
+      - redis
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    ports:
+      - "3020:3020"      # HTTP
+      - "8020:8020"      # UDP
+    environment:
+      - NODE_ENV=production
+      - HTTP_PORT=3020
+      - UDP_PORT=8020
+      - CONSUL_URL=http://consul:8500
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - consul
+      - redis
+    restart: unless-stopped
+
+  metrics-service:
+    build:
+      context: .
+      dockerfile: services/metrics-service/Dockerfile
+    ports:
+      - "3030:3030"      # HTTP
+      - "8030:8030"      # UDP (StatsD)
+      - "9030:9030"      # TCP
+    environment:
+      - NODE_ENV=production
+      - HTTP_PORT=3030
+      - UDP_PORT=8030
+      - TCP_PORT=9030
+      - CONSUL_URL=http://consul:8500
+      - REDIS_URL=redis://redis:6379
+      - INFLUXDB_URL=http://influxdb:8086
+    depends_on:
+      - influxdb
+      - consul
+      - redis
+    restart: unless-stopped
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+
+volumes:
+  consul_data:
+  redis_data:
+  postgres_data:
+  influxdb_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  default:
+    driver: bridge

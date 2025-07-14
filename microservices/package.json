@@ -1,0 +1,40 @@
+{
+  "name": "verb-microservices-starter",
+  "version": "1.0.0",
+  "description": "Production-ready microservices starter template with multiple protocols",
+  "private": true,
+  "workspaces": [
+    "services/*",
+    "gateway"
+  ],
+  "scripts": {
+    "dev": "bun run --filter='*' dev",
+    "start": "bun run --filter='*' start",
+    "build": "bun run --filter='*' build",
+    "test": "bun run --filter='*' test",
+    "lint": "bun run --filter='*' lint",
+    "typecheck": "bun run --filter='*' typecheck",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "k8s:deploy": "kubectl apply -f k8s/",
+    "k8s:delete": "kubectl delete -f k8s/"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "bun-types": "latest"
+  },
+  "keywords": [
+    "verb",
+    "microservices",
+    "multi-protocol",
+    "websocket",
+    "udp",
+    "tcp",
+    "http",
+    "api-gateway",
+    "distributed"
+  ],
+  "license": "MIT"
+}

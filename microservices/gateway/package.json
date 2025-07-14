@@ -1,0 +1,24 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "description": "API Gateway with protocol routing and load balancing",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun test",
+    "lint": "biome check .",
+    "typecheck": "bun --no-install --type-check src/index.ts"
+  },
+  "dependencies": {
+    "verb": "latest",
+    "consul": "^0.40.0",
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/consul": "^0.40.0",
+    "bun-types": "latest"
+  }
+}
