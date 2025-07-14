@@ -313,8 +313,8 @@ export const config = {
 
 ## Support
 
-- **Documentation**: [verb.sh/docs](https://verb.sh/docs)
-- **Examples**: [verb.sh/examples](https://verb.sh/examples)
+- **Documentation**: [verb.codes/docs](https://verb.codes/docs)
+- **Examples**: [verb.codes/examples](https://verb.codes/examples)
 - **GitHub Issues**: [github.com/verbjs/verb](https://github.com/verbjs/verb)
 
 ## License
