@@ -316,7 +316,6 @@ export const config = {
 - **Documentation**: [verb.sh/docs](https://verb.sh/docs)
 - **Examples**: [verb.sh/examples](https://verb.sh/examples)
 - **GitHub Issues**: [github.com/verbjs/verb](https://github.com/verbjs/verb)
-- **Discord**: [Join our community](https://discord.gg/verb)
 
 ## License
 
