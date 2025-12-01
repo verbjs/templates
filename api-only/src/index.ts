@@ -1,5 +1,4 @@
-import { createServer } from 'verb';
-import type { VerbRequest, VerbResponse } from 'verb';
+import { server, type Request, type Response } from 'verb';
 import { config } from './config';
 import { connectDatabase } from './db/connection';
 import { logger } from './utils/logger';
@@ -10,10 +9,10 @@ async function startServer() {
     await connectDatabase();
     logger.info('Database connected successfully');
 
-    const app = createServer();
+    const app = server.http();
     
     // Health check route
-    app.get('/health', async (_req: VerbRequest, res: VerbResponse) => {
+    app.get('/health', async (_req: Request, res: Response) => {
       const health = {
         status: 'ok',
         timestamp: new Date().toISOString(),
@@ -24,7 +23,7 @@ async function startServer() {
     });
 
     // API documentation
-    app.get('/docs', (_req: VerbRequest, res: VerbResponse) => {
+    app.get('/docs', (_req: Request, res: Response) => {
       res.html(`
         <!DOCTYPE html>
         <html>
@@ -53,7 +52,7 @@ async function startServer() {
     });
 
     // Welcome route
-    app.get('/', (_req: VerbRequest, res: VerbResponse) => {
+    app.get('/', (_req: Request, res: Response) => {
       res.json({ 
         message: 'Welcome to Verb API Template',
         version: '1.0.0',

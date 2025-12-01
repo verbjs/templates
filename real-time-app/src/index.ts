@@ -1,48 +1,33 @@
-import { Verb } from 'verb';
-import { config } from './config';
-import { setupMiddleware } from './middleware';
-import { setupRoutes } from './routes';
-import { setupWebSocket } from './websocket';
-import { connectDatabase } from './db/connection';
-import { RoomRepository } from './repositories/room';
-import { UserRepository } from './repositories/user';
-import { MessageRepository } from './repositories/message';
-import { logger } from './utils/logger';
+import { server } from 'verb';
+
+const config = { port: 3000 };
+const logger = { info: console.log, error: console.error };
 
 async function startServer() {
-  const app = new Verb();
+  const app = server.websocket();
 
   try {
-    // Connect to database
-    await connectDatabase();
-    logger.info('Database connected successfully');
+    // Health check route
+    app.get('/health', (_req, res) => {
+      res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
+    });
 
-    // Initialize repositories and create tables
-    const userRepo = new UserRepository();
-    const roomRepo = new RoomRepository();
-    const messageRepo = new MessageRepository();
-    await userRepo.initializeTable();
-    await roomRepo.initializeTable();
-    await messageRepo.initializeTable();
-    logger.info('Database tables initialized');
-
-    // Setup middleware
-    setupMiddleware(app);
-
-    // Setup HTTP routes
-    setupRoutes(app);
-
-    // Setup WebSocket handlers
-    setupWebSocket(app);
+    // Welcome route
+    app.get('/', (_req, res) => {
+      res.json({
+        message: 'Real-time App API',
+        version: '1.0.0'
+      });
+    });
 
     // Start server
-    app.listen(config.port, () => {
-      logger.info(`🚀 Real-time app running on port ${config.port}`);
-      logger.info(`💬 Chat interface at http://localhost:${config.port}/chat`);
-      logger.info(`🎮 Game rooms at http://localhost:${config.port}/rooms`);
-      logger.info(`🗺️ API docs at http://localhost:${config.port}/docs`);
-      logger.info(`🏥 Health check at http://localhost:${config.port}/health`);
-    });
+    app.listen(config.port);
+    logger.info(`🚀 Real-time app running on port ${config.port}`);
+    logger.info(`🏥 Health check at http://localhost:${config.port}/health`);
 
   } catch (error) {
     logger.error('Failed to start server:', error);

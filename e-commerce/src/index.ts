@@ -1,44 +1,33 @@
-import { Verb } from 'verb';
-import { config } from './config';
-import { setupMiddleware } from './middleware';
-import { setupRoutes } from './routes';
-import { connectDatabase } from './db/connection';
-import { ProductRepository } from './repositories/product';
-import { UserRepository } from './repositories/user';
-import { OrderRepository } from './repositories/order';
-import { logger } from './utils/logger';
+import { server } from 'verb';
+
+const config = { port: 3000 };
+const logger = { info: console.log, error: console.error };
 
 async function startServer() {
-  const app = new Verb();
+  const app = server.http();
 
   try {
-    // Connect to database
-    await connectDatabase();
-    logger.info('Database connected successfully');
+    // Health check route
+    app.get('/health', (_req, res) => {
+      res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
+    });
 
-    // Initialize repositories and create tables
-    const userRepo = new UserRepository();
-    const productRepo = new ProductRepository();
-    const orderRepo = new OrderRepository();
-    await userRepo.initializeTable();
-    await productRepo.initializeTable();
-    await orderRepo.initializeTable();
-    logger.info('Database tables initialized');
-
-    // Setup middleware
-    setupMiddleware(app);
-
-    // Setup routes
-    setupRoutes(app);
+    // Welcome route
+    app.get('/', (_req, res) => {
+      res.json({
+        message: 'E-commerce API',
+        version: '1.0.0'
+      });
+    });
 
     // Start server
-    app.listen(config.port, () => {
-      logger.info(`🛒 E-commerce server running on port ${config.port}`);
-      logger.info(`📊 Admin dashboard at http://localhost:${config.port}/admin`);
-      logger.info(`🛍️ Shop at http://localhost:${config.port}/shop`);
-      logger.info(`🗺️ API docs at http://localhost:${config.port}/docs`);
-      logger.info(`🏥 Health check at http://localhost:${config.port}/health`);
-    });
+    app.listen(config.port);
+    logger.info(`🛒 E-commerce server running on port ${config.port}`);
+    logger.info(`🏥 Health check at http://localhost:${config.port}/health`);
 
   } catch (error) {
     logger.error('Failed to start server:', error);

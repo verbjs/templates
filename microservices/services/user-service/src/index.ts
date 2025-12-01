@@ -1,47 +1,32 @@
-import { Verb } from 'verb';
-import { ServiceRegistry } from '../../../shared/registry';
-import { setupRoutes } from './routes';
-import { setupWebSocket } from './websocket';
-import { setupMiddleware } from './middleware';
-import { connectDatabase } from './db/connection';
-import { logger } from './utils/logger';
-import { config } from './config';
+import { server } from 'verb';
+
+const config = { port: 3001 };
+const logger = { info: console.log, error: console.error };
 
 async function startUserService() {
-  const app = new Verb();
+  const app = server.http();
 
   try {
-    // Connect to database
-    await connectDatabase();
-    logger.info('Database connected');
+    // Health check route
+    app.get('/health', (_req, res) => {
+      res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
+    });
 
-    // Setup middleware
-    setupMiddleware(app);
-
-    // Setup HTTP routes
-    setupRoutes(app);
-
-    // Setup WebSocket for real-time user updates
-    setupWebSocket(app);
+    // Welcome route
+    app.get('/', (_req, res) => {
+      res.json({
+        message: 'User Service API',
+        version: '1.0.0'
+      });
+    });
 
     // Start service
-    app.listen(config.port, async () => {
-      logger.info(`👤 User Service running on port ${config.port}`);
-
-      // Register with service registry
-      const registry = new ServiceRegistry(config.consul.url);
-      await registry.register({
-        id: `user-service-${config.port}`,
-        name: 'user-service',
-        address: config.host,
-        port: config.port,
-        protocols: ['http', 'websocket'],
-        health: `http://${config.host}:${config.port}/health`,
-        tags: ['user', 'authentication', 'profile']
-      });
-
-      logger.info('Service registered with discovery');
-    });
+    app.listen(config.port);
+    logger.info(`👤 User Service running on port ${config.port}`);
 
   } catch (error) {
     logger.error('Failed to start user service:', error);

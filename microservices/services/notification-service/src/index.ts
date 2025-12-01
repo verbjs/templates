@@ -1,55 +1,32 @@
-import { Verb } from 'verb';
-import { ServiceRegistry } from '../../../shared/registry';
-import { NotificationManager } from './services/notificationManager';
-import { setupRoutes } from './routes';
-import { setupWebSocket } from './websocket';
-import { setupUDP } from './udp';
-import { setupMiddleware } from './middleware';
-import { logger } from './utils/logger';
-import { config } from './config';
+import { server } from 'verb';
+
+const config = { port: 3003 };
+const logger = { info: console.log, error: console.error };
 
 async function startNotificationService() {
-  const app = new Verb();
+  const app = server.http();
 
   try {
-    // Initialize notification manager
-    const notificationManager = new NotificationManager();
-    await notificationManager.connect();
+    // Health check route
+    app.get('/health', (_req, res) => {
+      res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
+    });
 
-    // Setup middleware
-    setupMiddleware(app);
-
-    // Setup HTTP routes
-    setupRoutes(app, notificationManager);
-
-    // Setup WebSocket for real-time notifications
-    setupWebSocket(app, notificationManager);
-
-    // Setup UDP for high-frequency events
-    setupUDP(app, notificationManager);
+    // Welcome route
+    app.get('/', (_req, res) => {
+      res.json({
+        message: 'Notification Service API',
+        version: '1.0.0'
+      });
+    });
 
     // Start service
-    app.listen(config.http.port, async () => {
-      logger.info(`📢 Notification Service HTTP on port ${config.http.port}`);
-      logger.info(`📡 Notification Service UDP on port ${config.udp.port}`);
-
-      // Register with service registry
-      const registry = new ServiceRegistry(config.consul.url);
-      await registry.register({
-        id: `notification-service-${config.http.port}`,
-        name: 'notification-service',
-        address: config.host,
-        port: config.http.port,
-        protocols: ['http', 'websocket', 'udp'],
-        health: `http://${config.host}:${config.http.port}/health`,
-        tags: ['notification', 'realtime', 'events', 'email', 'sms'],
-        meta: {
-          udp_port: config.udp.port.toString()
-        }
-      });
-
-      logger.info('Notification service registered');
-    });
+    app.listen(config.port);
+    logger.info(`📢 Notification Service running on port ${config.port}`);
 
   } catch (error) {
     logger.error('Failed to start notification service:', error);
